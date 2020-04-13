@@ -30,7 +30,7 @@ module.exports = {
   },
   overrides: [
     {
-      files: ["src/*.ts", "src/*.tsx"],
+      files: ["*.ts", "*.tsx"],
       rules: {
         "import/no-unresolved": "off",
         "react/jsx-filename-extension": "off",
