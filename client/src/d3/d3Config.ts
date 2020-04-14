@@ -14,13 +14,13 @@ const d3Config = {
 };
 
 class MinMaxXY {
-  private minXValue: number = new Date('2020-01-22T00:00:00').getTime();
+  private minXValue: number = new Date('2020-01-01T00:00:00').getTime();
 
-  private maxXValue: number = new Date('2020-04-15T00:00:00').getTime();
+  private maxXValue: number = new Date('2020-01-01T00:00:00').getTime();
 
   private minYValue: number = 0;
 
-  private maxYValue: number = 220;
+  private maxYValue: number = 0;
 
   // constructor() {}
 

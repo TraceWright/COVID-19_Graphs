@@ -12,36 +12,6 @@ import d3Config, { Cartesian, MinMaxXY } from './d3Config';
 
 const minMax = new MinMaxXY();
 
-const xScale = scaleLinear()
-  .domain([minMax.minX(), minMax.maxX()])
-  .range([0, d3Config.maxChartWidth - d3Config.padding]);
-
-const yScale = scaleLinear()
-  .domain([minMax.minY(), minMax.maxY()])
-  .range([d3Config.maxChartHeight - d3Config.padding - d3Config.titlePadding, 0]);
-
-const scaleXData = (point: Cartesian) => xScale(point[0]);
-const scaleYData = (point: Cartesian) => yScale(point[1]);
-
-const yAxis = axisLeft(yScale)
-  .ticks(10)
-  .tickFormat(format(d3Config.numberFormat)) as any;
-
-const xAxis = axisBottom(xScale)
-  .ticks(20)
-  .tickFormat(timeFormat(d3Config.dateFormat) as any) as any;
-
-const drawAxes = () => {
-  select('.line-chart-xaxis')
-    .call(xAxis)
-    .selectAll('text')
-    .attr('text-anchor', 'middle')
-    .attr('transform', 'rotate(-65) translate(-20, -5)');
-
-  select('.line-chart-yaxis')
-    .call(yAxis);
-};
-
 export const buildAxes = () => {
   select('.line-chart')
     .append('g')
@@ -92,6 +62,36 @@ const addAxisLabel = () => {
 };
 
 const drawLine = (data: Cartesian[]) => {
+  minMax.minMax(data);
+
+  const xScale = scaleLinear()
+    .domain([minMax.minX(), minMax.maxX()])
+    .range([0, d3Config.maxChartWidth - d3Config.padding]);
+
+  const yScale = scaleLinear()
+    .domain([minMax.minY(), minMax.maxY()])
+    .range([d3Config.maxChartHeight - d3Config.padding - d3Config.titlePadding, 0]);
+
+  const scaleXData = (point: Cartesian) => xScale(point[0]);
+  const scaleYData = (point: Cartesian) => yScale(point[1]);
+
+  const yAxis = axisLeft(yScale)
+    .ticks(10)
+    .tickFormat(format(d3Config.numberFormat)) as any;
+
+  const xAxis = axisBottom(xScale)
+    .ticks(20)
+    .tickFormat(timeFormat(d3Config.dateFormat) as any) as any;
+
+  select('.line-chart-xaxis')
+    .call(xAxis)
+    .selectAll('text')
+    .attr('text-anchor', 'middle')
+    .attr('transform', 'rotate(-65) translate(-20, -5)');
+
+  select('.line-chart-yaxis')
+    .call(yAxis);
+
   const line = d3Line()
     .x(scaleXData)
     .y(scaleYData)
@@ -101,18 +101,12 @@ const drawLine = (data: Cartesian[]) => {
     .attr('d', line(data) || '');
 };
 
-const renderChanges = (data: Cartesian[]) => {
-  drawAxes();
-  drawLine(data);
-};
-
 const initializeChart = (data: Cartesian[]) => {
   buildAxes();
   buildLine();
   addAxisLabel();
-  minMax.minMax(data);
 
-  renderChanges(data);
+  drawLine(data);
 };
 
 export default initializeChart;
