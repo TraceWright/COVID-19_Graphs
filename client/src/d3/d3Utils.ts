@@ -3,42 +3,40 @@ import {
   axisBottom,
   format,
   timeFormat,
-  scaleTime,
   scaleLinear,
   select,
   curveMonotoneX,
   line as d3Line,
 } from 'd3';
-import d3Config from './d3Config';
+import d3Config, { Cartesian, MinMaxXY } from './d3Config';
 
-type Cartesian = [number, number];
-
-// const xScale = scaleTime()
-//   .domain([DateUtils.getStartOfMonth(new Date()), new Date()])
-//   .range([0, d3Config.maxChartWidth]);
+const minMax = new MinMaxXY();
 
 const xScale = scaleLinear()
-  .domain([d3Config.defaultMinXValue, d3Config.defaultMaxXValue])
-  .range([0, d3Config.maxChartWidth]);
+  .domain([minMax.minX(), minMax.maxX()])
+  .range([0, d3Config.maxChartWidth - d3Config.padding]);
 
 const yScale = scaleLinear()
-  .domain([d3Config.defaultMinYValue, d3Config.defaultMaxYValue])
-  .range([d3Config.maxChartHeight, 0]);
+  .domain([minMax.minY(), minMax.maxY()])
+  .range([d3Config.maxChartHeight - d3Config.padding - d3Config.titlePadding, 0]);
 
 const scaleXData = (point: Cartesian) => xScale(point[0]);
 const scaleYData = (point: Cartesian) => yScale(point[1]);
 
 const yAxis = axisLeft(yScale)
-  .ticks(5)
+  .ticks(10)
   .tickFormat(format(d3Config.numberFormat)) as any;
 
 const xAxis = axisBottom(xScale)
-  .ticks(5)
+  .ticks(20)
   .tickFormat(timeFormat(d3Config.dateFormat) as any) as any;
 
 const drawAxes = () => {
   select('.line-chart-xaxis')
-    .call(xAxis);
+    .call(xAxis)
+    .selectAll('text')
+    .attr('text-anchor', 'middle')
+    .attr('transform', 'rotate(-65) translate(-20, -5)');
 
   select('.line-chart-yaxis')
     .call(yAxis);
@@ -48,12 +46,12 @@ export const buildAxes = () => {
   select('.line-chart')
     .append('g')
     .attr('class', 'line-chart-yaxis')
-    .attr('transform', `translate(${d3Config.padding}, 0)`);
+    .attr('transform', `translate(${d3Config.padding}, ${d3Config.titlePadding})`);
 
   select('.line-chart')
     .append('g')
     .attr('class', 'line-chart-xaxis')
-    .attr('transform', `translate(${d3Config.padding}, ${d3Config.maxChartHeight})`);
+    .attr('transform', `translate(${d3Config.padding}, ${d3Config.maxChartHeight - d3Config.padding})`);
 };
 
 const buildLine = () => {
@@ -62,7 +60,7 @@ const buildLine = () => {
     .attr('stroke', 'blue')
     .attr('fill', 'none')
     .attr('class', 'line-chart-line')
-    .attr('transform', `translate(${d3Config.padding}, 0)`);
+    .attr('transform', `translate(${d3Config.padding}, ${d3Config.titlePadding})`);
 };
 
 const addAxisLabel = () => {
@@ -71,20 +69,29 @@ const addAxisLabel = () => {
     .attr('class', 'x-label')
     .attr('text-anchor', 'middle')
     .attr('x', (d3Config.maxChartWidth + d3Config.padding) / 2)
-    .attr('y', d3Config.maxChartHeight + d3Config.padding)
-    .text('Date (YYYY-MM-DD)');
+    .attr('y', d3Config.maxChartHeight)
+    .text(d3Config.xAxisLabel);
 
   select('.line-chart')
     .append('text')
-    .attr('class', 'y label')
+    .attr('class', 'y-label')
     .attr('text-anchor', 'middle')
     .attr('y', 0)
     .attr('dy', '.75em')
-    .attr('transform', `rotate(-90) translate(-${(d3Config.maxChartHeight + d3Config.padding) / 2}, 0)`)
-    .text('New Cases (count per day)');
+    .attr('transform', `rotate(-90) translate(-${d3Config.maxChartHeight / 2}, 0)`)
+    .text(d3Config.yAxisLabel);
+
+  select('.line-chart')
+    .append('text')
+    .attr('class', 'graph-title')
+    .attr('text-anchor', 'middle')
+    .style('font-size', '30px')
+    .attr('x', (d3Config.maxChartWidth / 2))
+    .attr('y', d3Config.titlePadding)
+    .text(d3Config.title);
 };
 
-const drawLine = (data: any) => {
+const drawLine = (data: Cartesian[]) => {
   const line = d3Line()
     .x(scaleXData)
     .y(scaleYData)
@@ -94,15 +101,17 @@ const drawLine = (data: any) => {
     .attr('d', line(data) || '');
 };
 
-const renderChanges = (data: any) => {
+const renderChanges = (data: Cartesian[]) => {
   drawAxes();
   drawLine(data);
 };
 
-const initializeChart = (data: any) => {
+const initializeChart = (data: Cartesian[]) => {
   buildAxes();
   buildLine();
   addAxisLabel();
+  minMax.minMax(data);
+
   renderChanges(data);
 };
 
