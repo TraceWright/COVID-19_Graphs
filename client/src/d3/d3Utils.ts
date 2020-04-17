@@ -11,8 +11,6 @@ import {
 // eslint-disable-next-line no-unused-vars
 import d3Config, { Cartesian, MinMaxXY } from './d3Config';
 
-const minMax = new MinMaxXY();
-
 export const buildAxes = () => {
   select('.line-chart')
     .append('g')
@@ -63,7 +61,7 @@ const addAxisLabel = () => {
 };
 
 const drawLine = (data: Cartesian[]) => {
-  minMax.minMax(data);
+  const minMax = new MinMaxXY(data);
 
   const xScale = scaleLinear()
     .domain([minMax.minX(), minMax.maxX()])

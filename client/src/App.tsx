@@ -1,14 +1,14 @@
+import { BrowserRouter, Route } from 'react-router-dom';
 import React from 'react';
 import './App.css';
-// import FirstChart from './FirstChart';
 import FirstGraph from './firstchart/FirstGraph';
 
 function App() {
   return (
-    <div className="App">
-      {/* <FirstChart /> */}
-      <FirstGraph />
-    </div>
+    <BrowserRouter>
+      <Route path="/" exact component={FirstGraph} />
+      <Route path="/home" exact component={FirstGraph} />
+    </BrowserRouter>
   );
 }
 

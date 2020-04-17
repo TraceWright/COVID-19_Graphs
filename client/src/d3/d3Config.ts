@@ -22,8 +22,6 @@ class MinMaxXY {
 
   private maxYValue: number = 0;
 
-  // constructor() {}
-
   minX(): number {
     return this.minXValue;
   }
@@ -40,7 +38,7 @@ class MinMaxXY {
     return this.maxYValue;
   }
 
-  minMax(data: Cartesian[]) {
+  constructor(data: Cartesian[]) {
     const dateValue = data.map((element: Cartesian) => element[0]);
     const countValue = data.map((element: Cartesian) => element[1]);
 
@@ -48,8 +46,6 @@ class MinMaxXY {
     this.maxXValue = Math.max(...dateValue);
     this.minYValue = Math.min(...countValue);
     this.maxYValue = Math.max(...countValue);
-
-    // console.log(this.minXValue, this.maxXValue, this.minYValue, this.maxYValue);
   }
 }
 
