@@ -1,5 +1,6 @@
 import React from 'react';
 import initializeChart from '../d3/d3Utils';
+// eslint-disable-next-line no-unused-vars
 import d3Config, { Cartesian } from '../d3/d3Config';
 
 interface IData { date: string, count: number }

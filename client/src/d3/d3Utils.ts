@@ -8,6 +8,7 @@ import {
   curveMonotoneX,
   line as d3Line,
 } from 'd3';
+// eslint-disable-next-line no-unused-vars
 import d3Config, { Cartesian, MinMaxXY } from './d3Config';
 
 const minMax = new MinMaxXY();
