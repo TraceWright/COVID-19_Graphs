@@ -34,7 +34,7 @@ module.exports = {
       rules: {
         "import/no-unresolved": "off",
         "react/jsx-filename-extension": "off",
-        "import/extensions": "off"
+        "import/extensions": "off",
       }
     }
   ],
