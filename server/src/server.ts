@@ -2,6 +2,8 @@ import express from 'express';
 import cors from 'cors';
 import connectDb from './connection';
 import Results from './Results';
+import Cases, { ICases } from './Cases';
+import formatData from './utilities';
 
 const app = express();
 const PORT = 8080;
@@ -17,6 +19,12 @@ const corsOptions = {
     }
   },
 };
+
+app.get('/cases', cors(corsOptions), async (req, res) => {
+  const cases: ICases[] = await Cases.find({});
+  const formatted = formatData(cases);
+  res.json(formatted);
+});
 
 app.get('/results', cors(corsOptions), async (req, res) => {
   const results = await Results.aggregate([

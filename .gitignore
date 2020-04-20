@@ -1,3 +1,5 @@
 server/node_modules
 client/node_modules
-mongo/COVID_data.json
+mongo/*.json
+mongo/*.csv
+.env

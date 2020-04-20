@@ -2,7 +2,7 @@
 import * as d3 from 'd3';
 import * as d3Array from 'd3-array';
 import * as d3Chromatics from 'd3-scale-chromatic';
-import dataImport from './category-brands.json';
+// import dataImport from './category-brands.json';
 
 interface ImportData { date: string, name: string, category: string, value: number }
 interface BrandData { date: Date, name: string, category: string, value: number }
@@ -18,14 +18,37 @@ interface DateValueData extends Array<Date | InnerData> {
 }
 
 class RaceChart {
-  k = 10;
+  dataImport: ImportData[];
 
-  n = 12;
+  data: BrandData[] = [];
+
+  datevalues: DateValueData[] = [];
+
+  names: Set<string> = new Set();
+
+  y: d3.ScaleBand<string> = d3.scaleBand();
+
+  x: d3.ScaleLinear<number, number> = d3.scaleLinear();
+
+  keyframes: KeyFramesArray = [];
+
+  prev: Prev = new Map();
+
+  next: Next = new Map();
+
+  constructor(data: ImportData[]) {
+    this.dataImport = data;
+    this.runData();
+  }
+
+  k = 3;
+
+  n = 8;
 
   duration = 250;
 
   margin = {
-    top: 16, right: 6, bottom: 6, left: 0,
+    top: 16, right: 6, bottom: 6, left: 100,
   };
 
   barSize = 48;
@@ -34,42 +57,51 @@ class RaceChart {
 
   height: number = this.margin.top + this.barSize * this.n + this.margin.bottom;
 
-  y = d3.scaleBand()
-    .domain(d3.range(this.n + 1) as unknown as readonly string[])
-    .rangeRound([this.margin.top, this.margin.top + this.barSize * (this.n + 1 + 0.1)])
-    .padding(0.1)
-
-  x = d3.scaleLinear()
-    .domain([0, 1])
-    .range([this.margin.left, this.width - this.margin.right]);
-
-  formatDate = d3.utcFormat('%Y');
+  formatDate = d3.utcFormat('%Y-%m-%d');
 
   formatNumber = d3.format(',d');
 
-  data: BrandData[] = dataImport.map((element: ImportData) => ({
-    date: new Date(element.date),
-    name: element.name,
-    category: element.category,
-    value: element.value,
-  }));
+  runData() {
+    this.prev = new Map(this.nameframes().flatMap(([, data]) => d3.pairs(
+      data as any, (a, b) => [b, a],
+    ))) as Prev;
 
-  datevalues: DateValueData[] = Array.from(
-    d3Array.rollup(
-      this.data,
-      (d: BrandData[]) => {
-        const ret: InnerData = {};
-        for (const p of d) {
-          ret[p.name] = p.value;
-        }
-        return ret;
-      },
-      (d: BrandData) => d.date.getTime(),
-    ),
-  ).sort(([a], [b]) => d3.ascending(a, b))
-    .map(([date, data]) => [new Date(date), data]);
+    this.next = new Map(this.nameframes().flatMap(([, data]) => d3.pairs(data as any)));
 
-  names: Set<string> = new Set(this.data.map((d) => d.name))
+    this.y = d3.scaleBand()
+      .domain(d3.range(this.n + 1) as unknown as readonly string[])
+      .rangeRound([this.margin.top, this.margin.top + this.barSize * (this.n + 1 + 0.1)])
+      .padding(0.1);
+
+    this.x = d3.scaleLinear()
+      .domain([0, 1])
+      .range([this.margin.left, this.width - this.margin.right]);
+
+    this.data = this.dataImport.map((element: ImportData) => ({
+      date: new Date(element.date),
+      name: element.name,
+      category: element.category,
+      value: element.value,
+    }));
+
+    this.datevalues = Array.from(
+      d3Array.rollup(
+        this.data,
+        (d: BrandData[]) => {
+          const ret: InnerData = {};
+          for (const p of d) {
+            ret[p.name] = p.value;
+          }
+          return ret;
+        },
+        (d: BrandData) => d.date.getTime(),
+      ),
+    ).sort(([a], [b]) => d3.ascending(a, b))
+      .map(([date, data]) => [new Date(date), data]);
+
+    this.names = new Set(this.data.map((d) => d.name));
+    this.keyframes = this.keyframesFunc();
+  }
 
   rank(value: Function): RankData[] {
     const data: RankData[] = Array.from(this.names, (name) => (
@@ -98,8 +130,6 @@ class RaceChart {
     return keyframes;
   }
 
-  keyframes: KeyFramesArray = this.keyframesFunc();
-
   nameframes = (): NameFramesArray => {
     const nf: NameFramesArray = [];
     const mapped: Map<any, any> = d3Array.group(this.keyframes.flatMap(([, dt]) => dt),
@@ -108,14 +138,8 @@ class RaceChart {
     return nf;
   };
 
-  prev: Prev = new Map(this.nameframes().flatMap(([, data]) => d3.pairs(
-    data as any, (a, b) => [b, a],
-  ))) as Prev;
-
-  next: Next = new Map(this.nameframes().flatMap(([, data]) => d3.pairs(data as any)));
-
-  color = () => {
-    const scale = d3.scaleOrdinal(d3Chromatics.schemeCategory10);
+  color = (): Function => {
+    const scale = d3.scaleOrdinal(d3Chromatics.schemeDark2);
     if (this.data.some((d: any) => d.category !== undefined)) {
       const categoryByName = new Map(this.data.map((d: any) => [d.name, d.category]));
       scale.domain(Array.from(categoryByName.values()));
@@ -156,10 +180,10 @@ class RaceChart {
     };
   }
 
-  textTween = (a: any, b: any) => {
+  textTween = (a: any, b: any, apply: any) => {
     const i = d3.interpolateNumber(a, b);
     return (t: any) => {
-      // this.textContent = this.formatNumber(i(t));
+      apply.text(this.formatNumber(i(t)));
     };
   };
 
@@ -188,11 +212,11 @@ class RaceChart {
         (update: any) => update,
         (exit: any) => exit.transition(transition).remove()
           .attr('transform', (d: RankData) => `translate(${this.x((this.next.get(d) || d).value)},${this.y((this.next.get(d) || d).rank.toString())})`)
-          .call((g: any) => g.select('tspan').tween('text', (d: any) => this.textTween(d.value, (this.next.get(d) || d).value))),
+          .call((g: any) => g.select('tspan').tween('text', (d: any) => this.textTween(d.value, (this.next.get(d) || d).value, svg.select(`#${d.name.replace(/\s/g, '_')}_value`)))),
       )
       .call((bar: any) => bar.transition(transition)
         .attr('transform', (d: any) => `translate(${this.x(d.value)},${this.y(d.rank)})`)
-        .call((g: any) => g.select('tspan').tween('text', (d: any) => this.textTween((this.prev.get(d) || d).value, d.value))));
+        .call((g: any) => g.select('tspan').attr('id', (d: RankData) => `${d.name.replace(/\s/g, '_')}_value`).tween('text', (d: RankData) => this.textTween((this.prev.get(d) || d).value, d.value, svg.select(`#${d.name.replace(/\s/g, '_')}_value`)))));
   }
 
   bars = (svg: any) => {
@@ -205,9 +229,9 @@ class RaceChart {
       .data(data.slice(0, this.n), (d: RankData) => d.name)
       .join(
         (enter: any) => enter.append('rect')
-          .attr('fill', this.color)
+          .attr('fill', this.color())
           .attr('height', this.y.bandwidth())
-          .attr('x', this.x(0))
+          .attr('x', this.margin.left)
           .attr('y', (d: any) => this.y((this.prev.get(d) || d).rank))
           .attr('width', (d: any) => this.x((this.prev.get(d) || d).value) - this.x(0)),
         (update: any) => update,
@@ -221,8 +245,8 @@ class RaceChart {
   }
 }
 
-async function* renderChart() {
-  const chart = new RaceChart();
+async function* renderChart(data: any) {
+  const chart = new RaceChart(data);
 
   const svg = d3.select('.race-chart')
     .attr('viewBox', [0, 0, chart.width, chart.height] as any);
