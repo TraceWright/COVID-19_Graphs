@@ -1,8 +1,8 @@
 import express from 'express';
 import cors from 'cors';
 import connectDb from './connection';
-import Results from './Results';
-import Cases, { ICases } from './Cases';
+import Results from './models/Results';
+import Cases, { ICases } from './models/Cases';
 import formatData from './utilities';
 
 const app = express();

@@ -1,4 +1,4 @@
-import { ICases } from './Cases';
+import { ICases } from './models/Cases';
 
 const formatData = (data: ICases[]) => data.flatMap((element: {timeseries: any, state: any}) => {
   const { state, timeseries } = element;

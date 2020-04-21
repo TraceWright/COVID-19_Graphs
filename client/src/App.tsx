@@ -1,14 +1,14 @@
 import { BrowserRouter, Route } from 'react-router-dom';
 import React from 'react';
 import './App.css';
-import FirstGraph from './firstchart/FirstGraph';
-import RaceChart from './barChartRace/RaceChart';
+import LineChart from './lineChart/LineChart';
+import RaceChart from './barRaceChart/RaceChart';
 
 function App() {
   return (
     <BrowserRouter>
-      <Route path="/" exact component={FirstGraph} />
-      <Route path="/home" exact component={FirstGraph} />
+      <Route path="/" exact component={LineChart} />
+      <Route path="/home" exact component={LineChart} />
       <Route path="/race" exact component={RaceChart} />
     </BrowserRouter>
   );
