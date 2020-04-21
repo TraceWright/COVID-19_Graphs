@@ -1,13 +1,13 @@
 import React from 'react';
-import initializeChart from '../d3/d3Utils';
+import initializeChart from './LineChartUtils';
 // eslint-disable-next-line no-unused-vars
-import d3Config, { Cartesian } from '../d3/d3Config';
+import d3Config, { Cartesian } from './LineChartConfig';
 
 interface IData { date: string, count: number }
 interface IProps {}
 interface IState { data: IData[] }
 
-class FirstGraph extends React.Component<IProps, IState> {
+class LineChart extends React.Component<IProps, IState> {
   componentDidMount() {
     fetch('http://localhost:8080/results')
       .then((response: Response) => response.json())
@@ -33,4 +33,4 @@ class FirstGraph extends React.Component<IProps, IState> {
   }
 }
 
-export default FirstGraph;
+export default LineChart;
