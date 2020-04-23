@@ -5,7 +5,7 @@ import Results from './models/Results';
 import Cases, { ICases } from './models/Cases';
 import formatData from './utilities';
 
-require('dotenv').config({ path: `${__dirname}/.env` });
+// require('dotenv').config({ path: `${__dirname}/../.env` });
 
 const app = express();
 const PORT = 8080;
