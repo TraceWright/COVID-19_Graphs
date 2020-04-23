@@ -25,4 +25,4 @@ def init_data():
     return json.dumps(df)
 
 with open("COVID_data.json", "w") as f:
-    f.write(init_data().replace('[', '').replace(']','').replace('},', '}'))
+    f.write(init_data())

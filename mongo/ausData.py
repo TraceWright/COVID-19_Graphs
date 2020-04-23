@@ -15,6 +15,7 @@ def init_data():
         data = csv.DictReader(f)
 
         with open("COVID_aus.json", "w") as f:
+            fileOut = []
             for row in data:
                 if row['Country/Region'] == 'Australia':
                     valueData = []
@@ -26,6 +27,7 @@ def init_data():
                             mongoData["value"] = int(v)
                             mongoData["date"] = dateISO
                             valueData.append(mongoData)
-                    f.write(json.dumps({'state': row['Province/State'], 'timeseries': valueData})+'\n')
+                    fileOut.append({'state': row['Province/State'], 'timeseries': valueData})
+            f.write(json.dumps(fileOut))
 
 init_data()

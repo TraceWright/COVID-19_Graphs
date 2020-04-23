@@ -3,3 +3,4 @@ client/node_modules
 mongo/*.json
 mongo/*.csv
 .env
+env.py
