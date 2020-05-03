@@ -41,11 +41,9 @@ class RaceChart {
     this.runData();
   }
 
-  width: number = raceChartConfig.margin.top + raceChartConfig.barSize
-    * raceChartConfig.numberOfBars + raceChartConfig.margin.bottom;
+  width: number = raceChartConfig.width;
 
-  height: number = raceChartConfig.margin.top + raceChartConfig.barSize
-    * raceChartConfig.numberOfBars + raceChartConfig.margin.bottom;
+  height: number = raceChartConfig.height;
 
   formatDate = d3.utcFormat('%Y-%m-%d');
 
@@ -61,7 +59,7 @@ class RaceChart {
     this.y = d3.scaleBand()
       .domain(d3.range(raceChartConfig.numberOfBars + 1) as unknown as readonly string[])
       .rangeRound([raceChartConfig.margin.top, raceChartConfig.margin.top
-        + raceChartConfig.barSize * (raceChartConfig.numberOfBars + 1 + 0.1)])
+        + raceChartConfig.barHeight * (raceChartConfig.numberOfBars + 1 + 0.1)])
       .padding(0.1);
 
     this.x = d3.scaleLinear()
@@ -142,11 +140,11 @@ class RaceChart {
 
   ticker(svg: any) {
     const now = svg.append('text')
-      .style('font', `bold ${raceChartConfig.barSize}px var(--sans-serif)`)
+      .style('font', `bold ${raceChartConfig.barHeight}px var(--sans-serif)`)
       .style('font-variant-numeric', 'tabular-nums')
       .attr('text-anchor', 'end')
       .attr('x', this.width - 6)
-      .attr('y', raceChartConfig.margin.top + raceChartConfig.barSize * (raceChartConfig.numberOfBars - 0.45))
+      .attr('y', raceChartConfig.margin.top + raceChartConfig.barHeight * (raceChartConfig.numberOfBars - 0.45))
       .attr('dy', '0.32em')
       .text(this.formatDate(this.keyframes[0][0]));
 
@@ -162,7 +160,7 @@ class RaceChart {
     const axis = d3.axisTop(this.x)
       .ticks(this.width / 160)
       .tickSizeOuter(0)
-      .tickSizeInner(-raceChartConfig.barSize * (raceChartConfig.numberOfBars + this.y.padding()));
+      .tickSizeInner(-raceChartConfig.barHeight * (raceChartConfig.numberOfBars + this.y.padding()));
 
     return (_: any, transition: any) => {
       g.transition(transition).call(axis);
@@ -240,8 +238,14 @@ class RaceChart {
 async function* renderChart(data: any) {
   const chart = new RaceChart(data);
 
-  const svg = d3.select('.race-chart')
-    .attr('viewBox', [0, 0, chart.width, chart.height] as any)
+  const svg = d3.select('.race-chart');
+
+  svg.append('text')
+    .attr('class', 'graph-title')
+    .attr('text-anchor', 'middle')
+    .style('font-size', '21px')
+    .attr('x', (chart.width / 2))
+    .attr('y', raceChartConfig.titlePadding)
     .text(raceChartConfig.title);
 
   const updateBars = chart.bars(svg);
