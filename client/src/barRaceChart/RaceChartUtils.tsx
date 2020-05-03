@@ -11,10 +11,10 @@ type KeyFramesArray = Array<any>[];
 type NameFramesArray = Array<string | RankData[]>[];
 type Prev = Map<RankData, RankData>;
 type Next = Map<RankData, RankData>;
-interface InnerData { [x: string]: number }
-interface DateValueData extends Array<Date | InnerData> {
+interface CaseCounts { [x: string]: number }
+interface DateValueData extends Array<Date | CaseCounts> {
   0: Date;
-  1: InnerData;
+  1: CaseCounts;
 }
 
 class RaceChart {
@@ -35,6 +35,55 @@ class RaceChart {
   prev: Prev = new Map();
 
   next: Next = new Map();
+
+  static rank(value: Function, names: Set<string>): RankData[] {
+    const data: RankData[] = Array.from(names, (name) => (
+      { name, value: value(name), rank: -1 }
+    ));
+    data.sort((a, b) => d3.descending(a.value, b.value));
+    for (let i = 0; i < data.length; i += 1) {
+      data[i].rank = Math.min(raceChartConfig.numberOfBars, i);
+    }
+    return data;
+  }
+
+  static interpolateValue: (
+    names: Set<string>,
+    aPair: CaseCounts,
+    bPair: CaseCounts,
+    t: number) => RankData[] = (
+      names: Set<string>,
+      aPair: CaseCounts,
+      bPair: CaseCounts,
+      t: number,
+    ) => RaceChart.rank(
+      (name: string) => (aPair[name] || 0) * (1 - t) + (bPair[name] || 0) * t, names,
+    );
+
+  static interpolateDate(aDate: Date, bDate: Date, t: number) {
+    return new Date(aDate.getTime() * (1 - t) + bDate.getTime() * t);
+  }
+
+  static getInterpolationFraction(i: number) {
+    return i / raceChartConfig.graphSpeed;
+  }
+
+  static keyframesFunc = (dateValues: DateValueData[], names: Set<string>): KeyFramesArray => {
+    let keyframes: KeyFramesArray = [];
+    let aDate: Date;
+    let bDate: Date;
+    let aCase: CaseCounts;
+    let bCase: CaseCounts;
+    for ([[aDate, aCase], [bDate, bCase]] of d3.pairs(dateValues)) {
+      for (let i = 0; i < raceChartConfig.graphSpeed; i += 1) {
+        const interpolationFraction: number = RaceChart.getInterpolationFraction(i);
+        const interpolatedDate: Date = RaceChart.interpolateDate(aDate, bDate, interpolationFraction);
+        const interpolatedValue: RankData[] = RaceChart.interpolateValue(names, aCase, bCase, interpolationFraction);
+        keyframes = keyframes.concat([[interpolatedDate, interpolatedValue]]);
+      }
+    }
+    return keyframes;
+  }
 
   constructor(data: ImportData[]) {
     this.dataImport = data;
@@ -77,7 +126,7 @@ class RaceChart {
       d3Array.rollup(
         this.data,
         (d: BrandData[]) => {
-          const ret: InnerData = {};
+          const ret: CaseCounts = {};
           for (const p of d) {
             ret[p.name] = p.value;
           }
@@ -89,35 +138,7 @@ class RaceChart {
       .map(([date, data]) => [new Date(date), data]);
 
     this.names = new Set(this.data.map((d) => d.name));
-    this.keyframes = this.keyframesFunc();
-  }
-
-  rank(value: Function): RankData[] {
-    const data: RankData[] = Array.from(this.names, (name) => (
-      { name, value: value(name), rank: -1 }
-    ));
-    data.sort((a, b) => d3.descending(a.value, b.value));
-    for (let i = 0; i < data.length; i += 1) {
-      data[i].rank = Math.min(raceChartConfig.numberOfBars, i);
-    }
-    return data;
-  }
-
-  keyframesFunc = (): KeyFramesArray => {
-    const keyframes = [];
-    let ka: Date; let kb: Date = new Date('2020-01-01T00:00:00');
-    let a: InnerData; let b: InnerData;
-    for ([[ka, a], [kb, b]] of d3.pairs(this.datevalues)) {
-      for (let i = 0; i < raceChartConfig.graphSpeed; i += 1) {
-        const t = i / raceChartConfig.graphSpeed;
-        keyframes.push([
-          new Date(ka.getTime() * (1 - t) + kb.getTime() * t),
-          // eslint-disable-next-line no-loop-func
-          this.rank((name: string) => (a[name] || 0) * (1 - t) + (b[name] || 0) * t),
-        ]);
-      }
-    }
-    return keyframes;
+    this.keyframes = RaceChart.keyframesFunc(this.datevalues, this.names);
   }
 
   nameframes = (): NameFramesArray => {
@@ -160,7 +181,8 @@ class RaceChart {
     const axis = d3.axisTop(this.x)
       .ticks(this.width / 160)
       .tickSizeOuter(0)
-      .tickSizeInner(-raceChartConfig.barHeight * (raceChartConfig.numberOfBars + this.y.padding()));
+      .tickSizeInner(-raceChartConfig.barHeight
+        * (raceChartConfig.numberOfBars + this.y.padding()));
 
     return (_: any, transition: any) => {
       g.transition(transition).call(axis);
