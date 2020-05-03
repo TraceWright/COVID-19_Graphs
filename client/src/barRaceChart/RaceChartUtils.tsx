@@ -119,7 +119,6 @@ class RaceChart {
         ]);
       }
     }
-    keyframes.push([new Date(kb.getTime()), this.rank((name: any) => b[name] || 0)]);
     return keyframes;
   }
 
