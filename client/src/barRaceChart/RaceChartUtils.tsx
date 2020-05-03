@@ -140,16 +140,16 @@ class RaceChart {
 
   ticker(svg: any) {
     const now = svg.append('text')
-      .style('font', `bold ${raceChartConfig.barHeight}px var(--sans-serif)`)
-      .style('font-variant-numeric', 'tabular-nums')
-      .attr('text-anchor', 'end')
-      .attr('x', this.width - 6)
-      .attr('y', raceChartConfig.margin.top + raceChartConfig.barHeight * (raceChartConfig.numberOfBars - 0.45))
+      .style('font-weight', 'bold')
+      .style('font-size', 'large')
+      .attr('text-anchor', 'left')
+      .attr('x', raceChartConfig.margin.left)
+      .attr('y', raceChartConfig.margin.top / 1.8)
       .attr('dy', '0.32em')
       .text(this.formatDate(this.keyframes[0][0]));
 
     return ([date]: any, transition: any) => {
-      transition.end().then(() => now.text(this.formatDate(date)));
+      transition.end().then(() => now.text(new Date(date).toLocaleString('en-US', { month: 'long', day: 'numeric' })));
     };
   }
 
@@ -242,9 +242,9 @@ async function* renderChart(data: any) {
 
   svg.append('text')
     .attr('class', 'graph-title')
-    .attr('text-anchor', 'middle')
-    .style('font-size', '21px')
-    .attr('x', (chart.width / 2))
+    .attr('text-anchor', 'left')
+    .style('font-size', '22px')
+    .attr('x', raceChartConfig.margin.left)
     .attr('y', raceChartConfig.titlePadding)
     .text(raceChartConfig.title);
 
