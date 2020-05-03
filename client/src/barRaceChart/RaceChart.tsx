@@ -7,7 +7,7 @@ interface IState { svg: any }
 
 class RaceGraph extends React.Component<IProps, IState> {
   componentDidMount() {
-    fetch('http://localhost:8080/cases')
+    fetch('https://60euq8w9ec.execute-api.ap-southeast-2.amazonaws.com/cases')
       .then((response: Response) => response.json())
       .then((data: IData[]) => {
         const svg = renderChart(data);
