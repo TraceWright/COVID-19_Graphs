@@ -1,5 +1,6 @@
 import React from 'react';
 import renderChart from './RaceChartUtils';
+import raceChartConfig from './RaceChartConfig';
 
 interface IData { timeseries: Array<{timeseries: any, state: any}>, state: string }
 interface IProps {}
@@ -29,8 +30,8 @@ class RaceGraph extends React.Component<IProps, IState> {
     return (
       <div style={{ textAlign: 'center' }}>
         <svg
-          width={800}
-          height={500}
+          width={raceChartConfig.width}
+          height={raceChartConfig.height}
           className="race-chart"
         />
       </div>
