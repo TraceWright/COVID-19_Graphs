@@ -3,6 +3,7 @@ import Select from 'react-select';
 import * as _ from 'lodash';
 import renderChart from './RaceChartUtils';
 import raceChartConfig from './RaceChartConfig';
+import './raceChart.css';
 
 interface IData { timeseries: Array<{timeseries: any, state: any}>, location: string }
 interface IProps {}
@@ -49,7 +50,8 @@ class RaceGraph extends React.Component<IProps, IState> {
   };
 
   createSVG(selectedLocation: { value: string, label: string }) {
-    fetch(`https://gzf0mx1fg5.execute-api.ap-southeast-2.amazonaws.com/${selectedLocation.value}`)
+    const URL = process.env.REACT_APP_LAMBDA_URL;
+    fetch(`${URL}${selectedLocation.value}`)
       .then((response: Response) => response.json())
       .then((data: IData[]) => {
         const svg = renderChart(data);
@@ -66,7 +68,7 @@ class RaceGraph extends React.Component<IProps, IState> {
     }
     return (
       <div style={{ textAlign: 'center' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div className="select-location">
           <div>Location</div>
           <div style={{ width: '160px' }}>
             <Select
