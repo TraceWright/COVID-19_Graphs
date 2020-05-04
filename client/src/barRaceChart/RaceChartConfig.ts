@@ -1,7 +1,7 @@
 const raceBarConfig = {
   barHeight: 60,
   maxBarWidth: 600,
-  numberOfBars: 8,
+  numberOfBars: 12,
 };
 const margin = {
   top: 100, right: 6, bottom: 6, left: 200,

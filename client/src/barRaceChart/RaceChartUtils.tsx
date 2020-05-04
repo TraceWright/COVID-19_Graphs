@@ -261,6 +261,7 @@ async function* renderChart(data: any) {
   const chart = new RaceChart(data);
 
   const svg = d3.select('.race-chart');
+  svg.selectAll('*').remove();
 
   svg.append('text')
     .attr('class', 'graph-title')
