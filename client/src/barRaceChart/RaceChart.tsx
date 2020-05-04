@@ -2,7 +2,7 @@ import React from 'react';
 import renderChart from './RaceChartUtils';
 import raceChartConfig from './RaceChartConfig';
 
-interface IData { timeseries: Array<{timeseries: any, state: any}>, state: string }
+interface IData { timeseries: Array<{timeseries: any, state: any}>, location: string }
 interface IProps {}
 interface IState { svg: any }
 
@@ -16,17 +16,21 @@ class RaceGraph extends React.Component<IProps, IState> {
       });
   }
 
-  formatData = (data: IData[]) => data.flatMap((element: {timeseries: any, state: any}) => {
-    const { state, timeseries } = element;
+  formatData = (data: IData[]) => data.flatMap((element: {timeseries: any, location: any}) => {
+    const { location, timeseries } = element;
     return timeseries.map((el: {date: Date, value: number}) => ({
-      name: state, value: el.value, date: el.date, category: state,
+      name: location, value: el.value, date: el.date, category: location,
     }));
   })
 
   render() {
     // eslint-disable-next-line react/destructuring-assignment
     const svg = this.state ? this.state.svg : null;
-    if (svg) svg.next();
+    if (svg) 
+    {
+      svg.next();
+      svg.next();
+    }
     return (
       <div style={{ textAlign: 'center' }}>
         <svg
