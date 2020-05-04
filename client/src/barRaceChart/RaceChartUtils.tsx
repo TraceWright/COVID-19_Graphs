@@ -2,7 +2,7 @@
 import * as d3 from 'd3';
 import * as d3Array from 'd3-array';
 import * as d3Chromatics from 'd3-scale-chromatic';
-import raceChartConfig from './RaceChartConfig';
+import raceChartDefaultConfig, { configType } from './RaceChartConfig'
 
 interface ImportData { date: string, name: string, category: string, value: number }
 interface BrandData { date: Date, name: string, category: string, value: number }
@@ -20,6 +20,8 @@ interface DateValueData extends Array<Date | CaseCounts> {
 class RaceChart {
   dataImport: ImportData[];
 
+  raceChartConfig: configType = raceChartDefaultConfig;
+
   data: BrandData[] = [];
 
   datevalues: DateValueData[] = [];
@@ -36,18 +38,18 @@ class RaceChart {
 
   next: Next = new Map();
 
-  static rank(value: Function, names: Set<string>): RankData[] {
+  rank(value: Function, names: Set<string>): RankData[] {
     const data: RankData[] = Array.from(names, (name) => (
       { name, value: value(name), rank: -1 }
     ));
     data.sort((a, b) => d3.descending(a.value, b.value));
     for (let i = 0; i < data.length; i += 1) {
-      data[i].rank = Math.min(raceChartConfig.numberOfBars, i);
+      data[i].rank = Math.min(this.raceChartConfig.numberOfBars, i);
     }
     return data;
   }
 
-  static interpolateValue: (
+  interpolateValue: (
     names: Set<string>,
     aPair: CaseCounts,
     bPair: CaseCounts,
@@ -56,7 +58,7 @@ class RaceChart {
       aPair: CaseCounts,
       bPair: CaseCounts,
       t: number,
-    ) => RaceChart.rank(
+    ) => this.rank(
       (name: string) => (aPair[name] || 0) * (1 - t) + (bPair[name] || 0) * t, names,
     );
 
@@ -64,35 +66,37 @@ class RaceChart {
     return new Date(aDate.getTime() * (1 - t) + bDate.getTime() * t);
   }
 
-  static getInterpolationFraction(i: number) {
-    return i / raceChartConfig.graphSpeed;
+  getInterpolationFraction(i: number) {
+    return i / this.raceChartConfig.graphSpeed;
   }
 
-  static keyframesFunc = (dateValues: DateValueData[], names: Set<string>): KeyFramesArray => {
+  keyframesFunc = (dateValues: DateValueData[], names: Set<string>): KeyFramesArray => {
     let keyframes: KeyFramesArray = [];
     let aDate: Date;
     let bDate: Date;
     let aCase: CaseCounts;
     let bCase: CaseCounts;
     for ([[aDate, aCase], [bDate, bCase]] of d3.pairs(dateValues)) {
-      for (let i = 0; i < raceChartConfig.graphSpeed; i += 1) {
-        const interpolationFraction: number = RaceChart.getInterpolationFraction(i);
+      for (let i = 0; i < this.raceChartConfig.graphSpeed; i += 1) {
+        const interpolationFraction: number = this.getInterpolationFraction(i);
         const interpolatedDate: Date = RaceChart.interpolateDate(aDate, bDate, interpolationFraction);
-        const interpolatedValue: RankData[] = RaceChart.interpolateValue(names, aCase, bCase, interpolationFraction);
+        const interpolatedValue: RankData[] = this.interpolateValue(names, aCase, bCase, interpolationFraction);
         keyframes = keyframes.concat([[interpolatedDate, interpolatedValue]]);
       }
     }
     return keyframes;
   }
 
-  constructor(data: ImportData[]) {
+  constructor(data: ImportData[], updateConfig: any) {
     this.dataImport = data;
+    debugger;
+    this.raceChartConfig = { ...this.raceChartConfig, ...updateConfig };
     this.runData();
   }
 
-  width: number = raceChartConfig.width;
+  width: number = this.raceChartConfig.width;
 
-  height: number = raceChartConfig.height;
+  height: number = this.raceChartConfig.height;
 
   formatDate = d3.utcFormat('%Y-%m-%d');
 
@@ -106,14 +110,14 @@ class RaceChart {
     this.next = new Map(this.nameframes().flatMap(([, data]) => d3.pairs(data as any)));
 
     this.y = d3.scaleBand()
-      .domain(d3.range(raceChartConfig.numberOfBars + 1) as unknown as readonly string[])
-      .rangeRound([raceChartConfig.margin.top, raceChartConfig.margin.top
-        + raceChartConfig.barHeight * (raceChartConfig.numberOfBars + 1 + 0.1)])
+      .domain(d3.range(this.raceChartConfig.numberOfBars + 1) as unknown as readonly string[])
+      .rangeRound([this.raceChartConfig.margin.top, this.raceChartConfig.margin.top
+        + this.raceChartConfig.barHeight * (this.raceChartConfig.numberOfBars + 1 + 0.1)])
       .padding(0.1);
 
     this.x = d3.scaleLinear()
       .domain([0, 1])
-      .range([raceChartConfig.margin.left, this.width - raceChartConfig.margin.right]);
+      .range([this.raceChartConfig.margin.left, this.width - this.raceChartConfig.margin.right]);
 
     this.data = this.dataImport.map((element: ImportData) => ({
       date: new Date(element.date),
@@ -138,7 +142,7 @@ class RaceChart {
       .map(([date, data]) => [new Date(date), data]);
 
     this.names = new Set(this.data.map((d) => d.name));
-    this.keyframes = RaceChart.keyframesFunc(this.datevalues, this.names);
+    this.keyframes = this.keyframesFunc(this.datevalues, this.names);
   }
 
   nameframes = (): NameFramesArray => {
@@ -164,8 +168,8 @@ class RaceChart {
       .style('font-weight', 'bold')
       .style('font-size', 'large')
       .attr('text-anchor', 'left')
-      .attr('x', raceChartConfig.margin.left)
-      .attr('y', raceChartConfig.margin.top / 1.8)
+      .attr('x', this.raceChartConfig.margin.left)
+      .attr('y', this.raceChartConfig.margin.top / 1.8)
       .attr('dy', '0.32em')
       .text(this.formatDate(this.keyframes[0][0]));
 
@@ -176,13 +180,13 @@ class RaceChart {
 
   axis(svg: any) {
     const g = svg.append('g')
-      .attr('transform', `translate(0,${raceChartConfig.margin.top})`);
+      .attr('transform', `translate(0,${this.raceChartConfig.margin.top})`);
 
     const axis = d3.axisTop(this.x)
       .ticks(this.width / 160)
       .tickSizeOuter(0)
-      .tickSizeInner(-raceChartConfig.barHeight
-        * (raceChartConfig.numberOfBars + this.y.padding()));
+      .tickSizeInner(-this.raceChartConfig.barHeight
+        * (this.raceChartConfig.numberOfBars + this.y.padding()));
 
     return (_: any, transition: any) => {
       g.transition(transition).call(axis);
@@ -208,7 +212,7 @@ class RaceChart {
 
     // eslint-disable-next-line no-return-assign
     return ([, data]: any, transition: any) => label = label
-      .data(data.slice(0, raceChartConfig.numberOfBars), (d: RankData) => d.name)
+      .data(data.slice(0, this.raceChartConfig.numberOfBars), (d: RankData) => d.name)
       .join(
         (enter: any) => enter.append('text')
           .attr('transform', (d: any) => `translate(${this.x((this.prev.get(d) || d).value)},${this.y((this.prev.get(d) || d).rank)})`)
@@ -238,12 +242,12 @@ class RaceChart {
 
     // eslint-disable-next-line no-return-assign
     return ([, data]: any, transition: any) => bar = bar
-      .data(data.slice(0, raceChartConfig.numberOfBars), (d: RankData) => d.name)
+      .data(data.slice(0, this.raceChartConfig.numberOfBars), (d: RankData) => d.name)
       .join(
         (enter: any) => enter.append('rect')
           .attr('fill', this.color())
           .attr('height', this.y.bandwidth())
-          .attr('x', raceChartConfig.margin.left)
+          .attr('x', this.raceChartConfig.margin.left)
           .attr('y', (d: any) => this.y((this.prev.get(d) || d).rank))
           .attr('width', (d: any) => this.x((this.prev.get(d) || d).value) - this.x(0)),
         (update: any) => update,
@@ -257,8 +261,8 @@ class RaceChart {
   }
 }
 
-async function* renderChart(data: any) {
-  const chart = new RaceChart(data);
+async function* renderChart(data: any, updateConfig: any) {
+  const chart = new RaceChart(data, updateConfig);
 
   const svg = d3.select('.race-chart');
   svg.selectAll('*').remove();
@@ -267,9 +271,9 @@ async function* renderChart(data: any) {
     .attr('class', 'graph-title')
     .attr('text-anchor', 'left')
     .style('font-size', '22px')
-    .attr('x', raceChartConfig.margin.left)
-    .attr('y', raceChartConfig.titlePadding)
-    .text(raceChartConfig.title);
+    .attr('x', chart.raceChartConfig.margin.left)
+    .attr('y', chart.raceChartConfig.titlePadding)
+    .text(chart.raceChartConfig.title);
 
   const updateBars = chart.bars(svg);
 
@@ -283,7 +287,7 @@ async function* renderChart(data: any) {
   let keyframe;
   for (keyframe of chart.keyframes) {
     const transition = svg.transition()
-      .duration(raceChartConfig.duration)
+      .duration(chart.raceChartConfig.duration)
       .ease(d3.easeLinear);
 
     // Extract the top bar’s value.
