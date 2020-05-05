@@ -2,7 +2,7 @@
 import * as d3 from 'd3';
 import * as d3Array from 'd3-array';
 import * as d3Chromatics from 'd3-scale-chromatic';
-import raceChartDefaultConfig, { configType } from './RaceChartConfig'
+import raceChartDefaultConfig, { configType } from './RaceChartConfig';
 
 interface ImportData { date: string, name: string, category: string, value: number }
 interface BrandData { date: Date, name: string, category: string, value: number }
@@ -79,8 +79,12 @@ class RaceChart {
     for ([[aDate, aCase], [bDate, bCase]] of d3.pairs(dateValues)) {
       for (let i = 0; i < this.raceChartConfig.graphSpeed; i += 1) {
         const interpolationFraction: number = this.getInterpolationFraction(i);
-        const interpolatedDate: Date = RaceChart.interpolateDate(aDate, bDate, interpolationFraction);
-        const interpolatedValue: RankData[] = this.interpolateValue(names, aCase, bCase, interpolationFraction);
+        const interpolatedDate: Date = RaceChart.interpolateDate(
+          aDate, bDate, interpolationFraction,
+        );
+        const interpolatedValue: RankData[] = this.interpolateValue(
+          names, aCase, bCase, interpolationFraction,
+        );
         keyframes = keyframes.concat([[interpolatedDate, interpolatedValue]]);
       }
     }
@@ -89,7 +93,6 @@ class RaceChart {
 
   constructor(data: ImportData[], updateConfig: any) {
     this.dataImport = data;
-    debugger;
     this.raceChartConfig = { ...this.raceChartConfig, ...updateConfig };
     this.runData();
   }

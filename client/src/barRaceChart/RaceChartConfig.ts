@@ -1,4 +1,4 @@
-export type configType = {
+export interface configType {
   graphSpeed: number,
   duration: number,
   title: string,
@@ -13,7 +13,8 @@ export type configType = {
   },
   width: number,
   height: number,
-};
+}
+
 const raceBarConfig = {
   barHeight: 60,
   maxBarWidth: 600,
@@ -25,7 +26,7 @@ const margin = {
 const raceChartDefaultConfig: configType = {
   graphSpeed: 3,
   duration: 250,
-  title: 'COVID-19 Cases',
+  title: 'COVID-19 Confirmed Cases',
   titlePadding: 30,
   barHeight: raceBarConfig.barHeight,
   numberOfBars: raceBarConfig.numberOfBars,

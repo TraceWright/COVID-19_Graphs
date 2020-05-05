@@ -1,6 +1,12 @@
+.location {
+  font-size: larger;
+  padding-right: 10px;
+}
+
 .select-location {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-left: -180px;
+  margin-left: -160px;
+  margin-top: 10px;
 }
