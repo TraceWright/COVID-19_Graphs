@@ -1,3 +1,20 @@
+export interface configType {
+  graphSpeed: number,
+  duration: number,
+  title: string,
+  titlePadding: number,
+  barHeight: number,
+  numberOfBars: number,
+  margin: {
+      top: number,
+      right: number,
+      bottom: number,
+      left: number,
+  },
+  width: number,
+  height: number,
+}
+
 const raceBarConfig = {
   barHeight: 60,
   maxBarWidth: 600,
@@ -6,10 +23,10 @@ const raceBarConfig = {
 const margin = {
   top: 100, right: 6, bottom: 6, left: 200,
 };
-const raceChartConfig = {
+const raceChartDefaultConfig: configType = {
   graphSpeed: 3,
   duration: 250,
-  title: 'COVID-19 Cases per Australian State',
+  title: 'COVID-19 Confirmed Cases',
   titlePadding: 30,
   barHeight: raceBarConfig.barHeight,
   numberOfBars: raceBarConfig.numberOfBars,
@@ -19,4 +36,4 @@ const raceChartConfig = {
       + (raceBarConfig.barHeight * raceBarConfig.numberOfBars),
 };
 
-export default raceChartConfig;
+export default raceChartDefaultConfig;

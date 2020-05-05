@@ -53,8 +53,8 @@ class RaceGraph extends React.Component<IProps, IState> {
     const URL = process.env.REACT_APP_LAMBDA_URL;
     fetch(`${URL}${selectedLocation.value}`)
       .then((response: Response) => response.json())
-      .then((data: IData[]) => {
-        const svg = renderChart(data);
+      .then((response: {data: IData[], config: any}) => {
+        const svg = renderChart(response.data, response.config);
         this.setState({ svg });
       });
   }
@@ -69,7 +69,7 @@ class RaceGraph extends React.Component<IProps, IState> {
     return (
       <div style={{ textAlign: 'center' }}>
         <div className="select-location">
-          <div>Location</div>
+          <div className="location">Location</div>
           <div style={{ width: '160px' }}>
             <Select
               value={selectedLocation}
