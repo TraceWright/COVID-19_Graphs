@@ -297,7 +297,6 @@ async function* renderChart(data: any, updateConfig: any) {
   for (keyframe of chart.keyframes) {
     if (!raceRunning) {
       svg.selectAll('*').remove();
-      hasStopped.emit('stopped');
       return;
     }
 
