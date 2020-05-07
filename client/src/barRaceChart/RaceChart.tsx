@@ -1,15 +1,18 @@
 import React from 'react';
 import Select from 'react-select';
 import * as _ from 'lodash';
+import * as d3 from 'd3';
 import renderChart from './RaceChartUtils';
 import raceChartConfig from './RaceChartConfig';
 import './raceChart.css';
+import Loading from '../loading/Loading';
 
 interface IData { timeseries: Array<{timeseries: any, state: any}>, location: string }
 interface IProps {}
 interface IState {
   svg: any,
   selectedLocation: { value: string, label: string },
+  loading: boolean,
 }
 
 const options = [
@@ -18,11 +21,17 @@ const options = [
 ];
 
 class RaceGraph extends React.Component<IProps, IState> {
+  static hideChart() {
+    const svg = d3.select('.race-chart');
+    svg.selectAll('*').style('visibility', 'hidden');
+  }
+
   constructor(props: IProps) {
     super(props);
     this.state = {
       selectedLocation: { value: 'country', label: 'Global' },
       svg: '',
+      loading: true,
     };
   }
 
@@ -45,8 +54,15 @@ class RaceGraph extends React.Component<IProps, IState> {
     }));
   });
 
-  handleChange = (selectedLocation: any) => {
-    this.setState({ selectedLocation });
+  handleChange = (selectedLocationDropdown: any) => {
+    const { selectedLocation } = this.state;
+    if (!_.isEqual(selectedLocation, selectedLocationDropdown)) {
+      this.setState({
+        selectedLocation: selectedLocationDropdown,
+        loading: true,
+      });
+      RaceGraph.hideChart();
+    }
   };
 
   createSVG(selectedLocation: { value: string, label: string }) {
@@ -55,12 +71,12 @@ class RaceGraph extends React.Component<IProps, IState> {
       .then((response: Response) => response.json())
       .then((response: {data: IData[], config: any}) => {
         const svg = renderChart(response.data, response.config);
-        this.setState({ svg });
+        this.setState({ svg, loading: false });
       });
   }
 
   render() {
-    const { selectedLocation, svg } = this.state;
+    const { selectedLocation, svg, loading } = this.state;
     const chart = this.state ? svg : null;
     if (chart) {
       chart.next();
@@ -77,6 +93,9 @@ class RaceGraph extends React.Component<IProps, IState> {
               options={options}
             />
           </div>
+        </div>
+        <div className="loading">
+          {loading && <Loading type="bubbles" color="pink" />}
         </div>
         <svg
           width={raceChartConfig.width}
