@@ -1,7 +1,7 @@
 import React from 'react';
 import Select from 'react-select';
 import * as _ from 'lodash';
-import renderChart, { stopAndHideChart, graphFinishDrawing } from './RaceChartUtils';
+import renderChart, { stopAndHideChart } from './RaceChartUtils';
 import raceChartConfig from './RaceChartConfig';
 import './raceChart.css';
 import Loading from '../loading/Loading';
