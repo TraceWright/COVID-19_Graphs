@@ -266,6 +266,8 @@ class RaceChart {
 
 let raceRunning: boolean = false;
 export function stopAndHideChart() {
+  const svg = d3.select('.race-chart');
+  svg.selectAll('*').style('visibility', 'hidden');
   raceRunning = false;
 }
 
