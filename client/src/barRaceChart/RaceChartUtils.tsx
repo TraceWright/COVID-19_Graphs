@@ -264,10 +264,17 @@ class RaceChart {
   }
 }
 
+let raceRunning: boolean = false;
+export function stopAndHideChart() {
+  raceRunning = false;
+}
+
 async function* renderChart(data: any, updateConfig: any) {
   const chart = new RaceChart(data, updateConfig);
+  raceRunning = true;
 
   const svg = d3.select('.race-chart');
+  svg.selectAll('*').remove();
 
   svg.append('text')
     .attr('class', 'graph-title')
@@ -288,6 +295,12 @@ async function* renderChart(data: any, updateConfig: any) {
 
   let keyframe;
   for (keyframe of chart.keyframes) {
+    if (!raceRunning) {
+      svg.selectAll('*').remove();
+      hasStopped.emit('stopped');
+      return;
+    }
+
     const transition = svg.transition()
       .duration(chart.raceChartConfig.duration)
       .ease(d3.easeLinear);

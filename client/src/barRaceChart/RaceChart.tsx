@@ -1,8 +1,7 @@
 import React from 'react';
 import Select from 'react-select';
 import * as _ from 'lodash';
-import * as d3 from 'd3';
-import renderChart from './RaceChartUtils';
+import renderChart, { stopAndHideChart, graphFinishDrawing } from './RaceChartUtils';
 import raceChartConfig from './RaceChartConfig';
 import './raceChart.css';
 import Loading from '../loading/Loading';
@@ -21,10 +20,6 @@ const options = [
 ];
 
 class RaceGraph extends React.Component<IProps, IState> {
-  static hideChart() {
-    const svg = d3.select('.race-chart');
-    svg.selectAll('*').style('visibility', 'hidden');
-  }
 
   constructor(props: IProps) {
     super(props);
@@ -61,7 +56,7 @@ class RaceGraph extends React.Component<IProps, IState> {
         selectedLocation: selectedLocationDropdown,
         loading: true,
       });
-      RaceGraph.hideChart();
+      stopAndHideChart();
     }
   };
 
