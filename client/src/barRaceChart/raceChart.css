@@ -10,3 +10,8 @@
   margin-left: -160px;
   margin-top: 10px;
 }
+
+.loading {
+  display: flex;
+  justify-content: center;
+}
