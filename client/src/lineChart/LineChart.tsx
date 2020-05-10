@@ -9,7 +9,8 @@ interface IState { data: IData[] }
 
 class LineChart extends React.Component<IProps, IState> {
   componentDidMount() {
-    fetch('http://localhost:8080/results')
+    const URL = process.env.REACT_APP_LAMBDA_URL;
+    fetch(`${URL}results`)
       .then((response: Response) => response.json())
       .then((data: IData[]) => {
         const arr: Cartesian[] = data.map((element: IData) => [
