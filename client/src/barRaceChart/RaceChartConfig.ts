@@ -24,7 +24,7 @@ const margin = {
   top: 100, right: 6, bottom: 6, left: 200,
 };
 const raceChartDefaultConfig: configType = {
-  graphSpeed: 3,
+  graphSpeed: 1,
   duration: 250,
   title: 'COVID-19 Confirmed Cases',
   titlePadding: 30,
